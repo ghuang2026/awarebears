@@ -223,7 +223,7 @@ def build_sparse_hamiltonian(pauli_terms):
         coeff = term.coefficient
         ops = term.pauli  # list of Pauli enums, qubit 0 first
         # Build sparse term: coeff * P0(0) * P1(1) * ...
-        sparse_term = coeff
+        sparse_term = None
         for qubit_idx, pauli_op in enumerate(ops):
             if pauli_op == Pauli.I:
                 continue
@@ -233,10 +233,12 @@ def build_sparse_hamiltonian(pauli_terms):
                 op = Pauli.Y(qubit_idx)
             elif pauli_op == Pauli.Z:
                 op = Pauli.Z(qubit_idx)
-            if sparse_term == coeff:
+            if sparse_term is None:
                 sparse_term = coeff * op
             else:
                 sparse_term = sparse_term * op
+        if sparse_term is None:
+            continue  # skip all-identity terms (global phase only)
         if sparse is None:
             sparse = sparse_term
         else:
